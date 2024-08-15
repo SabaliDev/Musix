@@ -3,10 +3,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 
 import {
-  nextSong,
-  prevSong,
-  playPause,
-} from "../../redux/features/playerSlice";
+  setCurrentSong,
+  setIsPlaying,
+  setPlaylist,
+  updateRoomPlayback
+} from "../../redux/features/listeningRoomSlice";
 import Controls from "./Controls";
 import Player from "./Player";
 import Seekbar from "./Seekbar";
@@ -15,8 +16,7 @@ import VolumeBar from "./VolumeBar";
 import Visualizer from "./Visualizer";
 
 const MusicPlayer = () => {
-  const { activeSong, currentSongs, currentIndex, isActive, isPlaying } =
-    useSelector((state) => state.player);
+  const { activeRoom, currentSong, isPlaying, playlist } = useSelector((state) => state.listeningRoom);
   const [duration, setDuration] = useState(0);
   const [seekTime, setSeekTime] = useState(0);
   const [appTime, setAppTime] = useState(0);
@@ -26,55 +26,64 @@ const MusicPlayer = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (currentSongs.length) dispatch(playPause(true));
-  }, [currentIndex]);
+    if (playlist.length && !currentSong) {
+      dispatch(setCurrentSong(playlist[0]));
+    }
+  }, [playlist, currentSong, dispatch]);
 
   const handlePlayPause = () => {
-    if (!isActive) return;
+    if (!activeRoom) return;
 
-    if (isPlaying) {
-      dispatch(playPause(false));
-    } else {
-      dispatch(playPause(true));
-    }
+    const newPlaybackState = { isPlaying: !isPlaying, currentSong, playlist };
+    dispatch(updateRoomPlayback({ roomId: activeRoom._id, playbackState: newPlaybackState }));
   };
 
   const handleNextSong = () => {
-    dispatch(playPause(false));
+    if (!activeRoom || !playlist.length) return;
+
+    const currentIndex = playlist.findIndex(song => song.id === currentSong.id);
+    let nextIndex;
 
     if (!shuffle) {
-      dispatch(nextSong((currentIndex + 1) % currentSongs.length));
+      nextIndex = (currentIndex + 1) % playlist.length;
     } else {
-      dispatch(nextSong(Math.floor(Math.random() * currentSongs.length)));
+      nextIndex = Math.floor(Math.random() * playlist.length);
     }
+
+    const newPlaybackState = { isPlaying: true, currentSong: playlist[nextIndex], playlist };
+    dispatch(updateRoomPlayback({ roomId: activeRoom._id, playbackState: newPlaybackState }));
   };
 
   const handlePrevSong = () => {
+    if (!activeRoom || !playlist.length) return;
+
+    const currentIndex = playlist.findIndex(song => song.id === currentSong.id);
+    let prevIndex;
+
     if (currentIndex === 0) {
-      dispatch(prevSong(currentSongs.length - 1));
+      prevIndex = playlist.length - 1;
     } else if (shuffle) {
-      dispatch(prevSong(Math.floor(Math.random() * currentSongs.length)));
+      prevIndex = Math.floor(Math.random() * playlist.length);
     } else {
-      dispatch(prevSong(currentIndex - 1));
+      prevIndex = currentIndex - 1;
     }
+
+    const newPlaybackState = { isPlaying: true, currentSong: playlist[prevIndex], playlist };
+    dispatch(updateRoomPlayback({ roomId: activeRoom._id, playbackState: newPlaybackState }));
   };
 
   return (
     <motion.div className="relative sm:px-12 px-8 w-full flex items-center justify-between">
-      <Track
-        isPlaying={isPlaying}
-        isActive={isActive}
-        activeSong={activeSong}
-      />
+      <Track isPlaying={isPlaying} isActive={!!currentSong} activeSong={currentSong} />
       <div className="flex-1 flex flex-col items-center justify-center">
         <Controls
           isPlaying={isPlaying}
-          isActive={isActive}
+          isActive={!!currentSong}
           repeat={repeat}
           setRepeat={setRepeat}
           shuffle={shuffle}
           setShuffle={setShuffle}
-          currentSongs={currentSongs}
+          currentSongs={playlist}
           handlePlayPause={handlePlayPause}
           handlePrevSong={handlePrevSong}
           handleNextSong={handleNextSong}
@@ -88,12 +97,11 @@ const MusicPlayer = () => {
           appTime={appTime}
         />
         <Player
-          activeSong={activeSong}
+          activeSong={currentSong}
           volume={volume}
           isPlaying={isPlaying}
           seekTime={seekTime}
           repeat={repeat}
-          currentIndex={currentIndex}
           onEnded={handleNextSong}
           onTimeUpdate={(event) => setAppTime(event.target.currentTime)}
           onLoadedData={(event) => setDuration(event.target.duration)}

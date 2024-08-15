@@ -7,7 +7,7 @@ export const spotifyCoreApi = createApi({
   reducerPath: "spotifyCoreApi",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/api",
+    baseUrl: "http://localhost:8080/api/music",
     prepareHeaders: (headers) => {
       headers.set("Authorization", `Bearer ${token}`);
       return headers;
