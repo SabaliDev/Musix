@@ -7,22 +7,26 @@ import {
   leaveRoom,
   fetchRoomDetails,
   updateRoomPlayback,
-  setCurrentSong,
-  setIsPlaying,
-  setPlaylist
+  setRoomActiveSong,
+  playPauseRoom,
+  setPlaylist,
 } from "../redux/features/listeningRoomSlice";
-import MusicPlayer from "../components/MusicPlayer";
-import RoomPlaylist from "../components/RoomPlaylist";
+import { stopGlobalPlayer } from "../redux/features/playerSlice";
+import MusicPlayer from "../components/ListeningRoom/RoomMusicPlayer";
+
+import Chat from "../components/ListeningRoom/ChatRoom";
 
 const ListeningRoom = () => {
   const [roomCode, setRoomCode] = useState("");
   const [createRoomName, setCreateRoomName] = useState("");
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { activeRoom, isLoading, error, currentSong, isPlaying, playlist } = useSelector((state) => state.listeningRoom);
+  const { activeRoom, isLoading, error, currentSong, isPlaying, playlist } =
+    useSelector((state) => state.listeningRoom);
+  const { tracks } = useSelector((state) => state.roomPlayer);
 
   useEffect(() => {
-    const storedRoomId = localStorage.getItem('activeRoomId');
+    const storedRoomId = localStorage.getItem("activeRoomId");
     if (storedRoomId && !activeRoom) {
       dispatch(fetchRoomDetails(storedRoomId));
     }
@@ -36,6 +40,7 @@ const ListeningRoom = () => {
 
   const handleCreateRoom = () => {
     if (createRoomName.trim()) {
+      dispatch(stopGlobalPlayer());
       dispatch(createRoom(createRoomName));
       setCreateRoomName("");
     }
@@ -43,6 +48,7 @@ const ListeningRoom = () => {
 
   const handleJoinRoom = () => {
     if (roomCode.trim()) {
+      dispatch(stopGlobalPlayer());
       dispatch(joinRoom(roomCode));
       setRoomCode("");
     }
@@ -54,15 +60,17 @@ const ListeningRoom = () => {
     }
   };
 
-  const handleSongSelect = (song) => {
+  const handleRoomSongSelect = (song) => {
     if (!activeRoom) return;
 
-    dispatch(setCurrentSong(song));
-    dispatch(setIsPlaying(true));
-    dispatch(updateRoomPlayback({
-      roomId: activeRoom._id,
-      playbackState: { currentSong: song, isPlaying: true, playlist }
-    }));
+    dispatch(setRoomActiveSong(song));
+    dispatch(playPauseRoom(true));
+    dispatch(
+      updateRoomPlayback({
+        roomId: activeRoom._id,
+        playbackState: { currentSong: song, isPlaying: true, playlist },
+      })
+    );
   };
 
   return (
@@ -94,8 +102,14 @@ const ListeningRoom = () => {
           >
             <MdLogout className="mr-2" /> Leave Room
           </button>
-          <MusicPlayer />
-          <RoomPlaylist onSongSelect={handleSongSelect} />
+          <div className="flex">
+            <div className="w-2/3 pr-4">
+              <MusicPlayer />
+            </div>
+            <div className="w-1/3">
+              <Chat />
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">

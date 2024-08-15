@@ -107,6 +107,7 @@ export const leaveRoom = createAsyncThunk(
   }
 );
 
+
 const listeningRoomSlice = createSlice({
   name: "listeningRoom",
   initialState: {
@@ -118,15 +119,31 @@ const listeningRoomSlice = createSlice({
     playlist: [],
   },
   reducers: {
-    setCurrentSong: (state, action) => {
-        state.currentSong = action.payload;
-      },
-      setIsPlaying: (state, action) => {
-        state.isPlaying = action.payload;
-      },
-      setPlaylist: (state, action) => {
-        state.playlist = action.payload;
-      },
+    setRoomActiveSong: (state, action) => {
+      state.currentSong = action.payload;
+    },
+    playPauseRoom: (state, action) => {
+      state.isPlaying = action.payload;
+    },
+    setPlaylist: (state, action) => {
+      state.playlist = action.payload;
+    },
+    nextRoomSong: (state) => {
+      const currentIndex = state.playlist.findIndex(song => song.id === state.currentSong.id);
+      if (currentIndex < state.playlist.length - 1) {
+        state.currentSong = state.playlist[currentIndex + 1];
+      } else {
+        state.currentSong = state.playlist[0]; // Loop back to the first song
+      }
+    },
+    prevRoomSong: (state) => {
+      const currentIndex = state.playlist.findIndex(song => song.id === state.currentSong.id);
+      if (currentIndex > 0) {
+        state.currentSong = state.playlist[currentIndex - 1];
+      } else {
+        state.currentSong = state.playlist[state.playlist.length - 1]; // Go to the last song
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -186,6 +203,13 @@ const listeningRoomSlice = createSlice({
   },
 });
 
-export const { setCurrentSong, setIsPlaying, setPlaylist } = listeningRoomSlice.actions;
+export const { 
+  setRoomActiveSong, 
+  playPauseRoom, 
+  setPlaylist, 
+  nextRoomSong, 
+  prevRoomSong 
+} = listeningRoomSlice.actions;
+
 
 export default listeningRoomSlice.reducer;

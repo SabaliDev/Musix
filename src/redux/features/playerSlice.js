@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 const initialState = {
   currentSongs: [],
@@ -9,6 +9,14 @@ const initialState = {
   genreListId: '',
   queue: [], // New field for the queue
 };
+
+export const stopGlobalPlayer = createAsyncThunk(
+  'player/stopGlobalPlayer',
+  async (_, { dispatch }) => {
+    dispatch(setActiveSong({ song: null, data: [], i: -1 }));
+    dispatch(playPause(false));
+  }
+);
 
 const playerSlice = createSlice({
   name: 'player',
@@ -50,6 +58,14 @@ const playerSlice = createSlice({
     removeFromQueue: (state, action) => {
       state.queue.splice(action.payload, 1);
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(stopGlobalPlayer.fulfilled, (state) => {
+      state.isActive = false;
+      state.isPlaying = false;
+      state.activeSong = {};
+      state.currentIndex = 0;
+    });
   },
 });
 
