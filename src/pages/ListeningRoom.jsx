@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { MdMusicNote, MdGroup, MdLogin, MdLogout, MdAdd } from "react-icons/md";
-import { joinRoom, createRoom, leaveRoom, fetchRoomDetails } from "../redux/features/listeningRoomSlice";
+import {
+  joinRoom,
+  createRoom,
+  leaveRoom,
+  fetchRoomDetails,
+  updateRoomPlayback,
+  setCurrentSong,
+  setIsPlaying,
+  setPlaylist
+} from "../redux/features/listeningRoomSlice";
 import MusicPlayer from "../components/MusicPlayer";
 import RoomPlaylist from "../components/RoomPlaylist";
 
@@ -10,7 +19,7 @@ const ListeningRoom = () => {
   const [createRoomName, setCreateRoomName] = useState("");
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { activeRoom, isLoading, error } = useSelector((state) => state.listeningRoom);
+  const { activeRoom, isLoading, error, currentSong, isPlaying, playlist } = useSelector((state) => state.listeningRoom);
 
   useEffect(() => {
     const storedRoomId = localStorage.getItem('activeRoomId');
@@ -18,6 +27,12 @@ const ListeningRoom = () => {
       dispatch(fetchRoomDetails(storedRoomId));
     }
   }, [dispatch, activeRoom]);
+
+  useEffect(() => {
+    if (activeRoom && activeRoom.playlist) {
+      dispatch(setPlaylist(activeRoom.playlist));
+    }
+  }, [activeRoom, dispatch]);
 
   const handleCreateRoom = () => {
     if (createRoomName.trim()) {
@@ -37,6 +52,17 @@ const ListeningRoom = () => {
     if (activeRoom) {
       dispatch(leaveRoom(activeRoom._id));
     }
+  };
+
+  const handleSongSelect = (song) => {
+    if (!activeRoom) return;
+
+    dispatch(setCurrentSong(song));
+    dispatch(setIsPlaying(true));
+    dispatch(updateRoomPlayback({
+      roomId: activeRoom._id,
+      playbackState: { currentSong: song, isPlaying: true, playlist }
+    }));
   };
 
   return (
@@ -69,7 +95,7 @@ const ListeningRoom = () => {
             <MdLogout className="mr-2" /> Leave Room
           </button>
           <MusicPlayer />
-          <RoomPlaylist />
+          <RoomPlaylist onSongSelect={handleSongSelect} />
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">

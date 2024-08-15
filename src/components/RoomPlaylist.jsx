@@ -1,38 +1,32 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { setCurrentSong, updateRoomPlayback } from '../redux/features/listeningRoomSlice';
+import { useSelector } from 'react-redux';
 
-const RoomPlaylist = () => {
-  const { activeRoom, playlist, currentSong } = useSelector((state) => state.listeningRoom);
-  const dispatch = useDispatch();
+const RoomPlaylist = ({ onSongSelect }) => {
+  const { activeRoom } = useSelector((state) => state.listeningRoom);
+  const { currentSong, isPlaying } = useSelector((state) => state.listeningRoom);
 
-  const handleSongClick = (song) => {
-    if (!activeRoom) return;
-
-    const newPlaybackState = { isPlaying: true, currentSong: song, playlist };
-    dispatch(updateRoomPlayback({ roomId: activeRoom._id, playbackState: newPlaybackState }));
-  };
+  if (!activeRoom || !activeRoom.playlist) {
+    return (
+      <div className="mt-8">
+        <h3 className="text-xl font-semibold mb-4">Room Playlist</h3>
+        <p>No playlist available.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col w-full p-4 bg-gray-800 rounded-lg">
-      <h3 className="text-white text-xl font-bold mb-4">Room Playlist</h3>
-      <ul className="overflow-y-auto max-h-60">
-        {playlist.map((song) => (
+    <div className="mt-8">
+      <h3 className="text-xl font-semibold mb-4">Room Playlist</h3>
+      <ul>
+        {activeRoom.playlist.map((song, index) => (
           <li
             key={song.id}
-            className={`flex items-center justify-between p-2 cursor-pointer ${
-              currentSong?.id === song.id ? 'bg-gray-700' : 'hover:bg-gray-700'
+            className={`cursor-pointer p-2 hover:bg-gray-700 ${
+              currentSong?.id === song.id ? 'bg-gray-700' : ''
             }`}
-            onClick={() => handleSongClick(song)}
+            onClick={() => onSongSelect(song, index)}
           >
-            <div className="flex items-center">
-              <img src={song.img} alt={song.title} className="w-10 h-10 mr-3 rounded" />
-              <div>
-                <p className="text-white">{song.title}</p>
-                <p className="text-gray-400 text-sm">{song.artist}</p>
-              </div>
-            </div>
-            <span className="text-gray-400">{song.duration}</span>
+            {song.title} - {song.artist}
           </li>
         ))}
       </ul>
