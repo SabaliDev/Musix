@@ -1,24 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react';
-import io from 'socket.io-client';
+import React, { useState, useEffect, useRef, FormEvent } from 'react';
+import io, { Socket } from 'socket.io-client';
+import { BASE_URL } from '../../constants/apiConstants';
 
-// const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:8080';
-const SERVER_URL = 'http://localhost:8080';
-const socket = io(SERVER_URL);
+// Define types for messages
+interface ChatMessage {
+  id: string;
+  text: string;
+  timestamp: number;
+}
 
-const Chat = () => {
-  const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const messagesEndRef = useRef(null);
+// Initialize socket connection
+const socket: Socket = io(BASE_URL);
+
+const Chat: React.FC = () => {
+  // State for messages and input
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputMessage, setInputMessage] = useState<string>('');
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    socket.on('chatHistory', (history) => {
+    // Handle incoming chat history
+    socket.on('chatHistory', (history: ChatMessage[]) => {
       setMessages(history);
     });
 
-    socket.on('newChatMessage', (message) => {
+    // Handle new chat messages
+    socket.on('newChatMessage', (message: ChatMessage) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
+    // Cleanup on component unmount
     return () => {
       socket.off('chatHistory');
       socket.off('newChatMessage');
@@ -26,10 +37,11 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
+    // Scroll to the bottom of the chat when messages change
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (inputMessage.trim()) {
       socket.emit('chatMessage', inputMessage);

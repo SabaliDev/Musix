@@ -7,7 +7,7 @@ import AroundYou from "./AroundYou";
 import QueuePage from "./Queue";
 import Register from "./Register";
 import Login from "./Login";
-import PlaylistsPage from "./PlayList";
+
 import ListeningRoom from "./ListeningRoom";
 import { PrivateRoute } from "../components";
 
@@ -22,6 +22,5 @@ export {
   Register,
   Login,
   PrivateRoute,
-  PlaylistsPage,
-  ListeningRoom
+  ListeningRoom,
 };

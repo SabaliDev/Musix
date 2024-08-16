@@ -18,7 +18,6 @@ import {
   Register,
   Login,
   QueuePage,
-  PlaylistsPage,
   ListeningRoom,
 } from "./pages";
 
@@ -35,9 +34,10 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
       </Route>
-      
+
       <Route element={<PrivateRoute />}>
-        <Route path="/*"
+        <Route
+          path="/*"
           element={
             <div className="relative flex">
               <Sidebar />
@@ -45,9 +45,9 @@ const App = () => {
                 <Searchbar />
                 <div className="px-6 h-[calc(100vh-72px)] overflow-y-scroll hide-scrollbar flex xl:flex-row flex-col-reverse">
                   <div className="flex-1 h-fit pb-40">
-                    <Routes >
+                    <Routes>
                       <Route path="/" element={<Discover />} />
-                      <Route path="/playlist" element={<PlaylistsPage />} />
+
                       <Route path="/top-artists" element={<TopArtists />} />
                       <Route path="/top-charts" element={<TopCharts />} />
                       <Route path="/artists/:id" element={<ArtistDetails />} />

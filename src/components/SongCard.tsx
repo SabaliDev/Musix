@@ -1,22 +1,37 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import {
   playPause,
   setActiveSong,
   addToQueue,
 } from "../redux/features/playerSlice";
-import { addSongToPlaylist } from "../redux/features/playListSlice";
+
 import PlayPause from "./PlayPause";
 
 import { BsThreeDots } from "react-icons/bs";
+import { Song } from "../types";
 
-const SongCard = ({ song, isPlaying, activeSong, data, i }) => {
+// Define types
+
+interface SongCardProps {
+  song: Song;
+  isPlaying: boolean;
+  activeSong: Song | null;
+  data: Song[];
+  i: number;
+}
+
+const SongCard: React.FC<SongCardProps> = ({
+  song,
+  isPlaying,
+  activeSong,
+  data,
+  i,
+}) => {
   const dispatch = useDispatch();
-  const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
-  const { userPlaylists } = useSelector((state) => state.playlists);
   const [showOptions, setShowOptions] = useState(false);
-  const optionsRef = useRef(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
 
   const handlePauseClick = () => {
     dispatch(playPause(false));
@@ -32,14 +47,18 @@ const SongCard = ({ song, isPlaying, activeSong, data, i }) => {
     setShowOptions(false);
   };
 
-  const handleAddToPlaylist = (playlistId) => {
-    dispatch(addSongToPlaylist({ playlistId, songId: song._id }));
-    setShowPlaylistMenu(false);
+  // Placeholder for adding to favorites
+  const handleAddToFavorites = () => {
+    console.log("Add to favorites functionality not implemented yet");
+    setShowOptions(false);
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (optionsRef.current && !optionsRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        optionsRef.current &&
+        !optionsRef.current.contains(event.target as Node)
+      ) {
         setShowOptions(false);
       }
     };
@@ -103,26 +122,11 @@ const SongCard = ({ song, isPlaying, activeSong, data, i }) => {
                 Add to Queue
               </li>
               <li
-                onClick={() => setShowPlaylistMenu(!showPlaylistMenu)}
+                onClick={handleAddToFavorites}
                 className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white"
               >
-                Add to Playlist
+                Add to Favourites
               </li>
-            </ul>
-          </div>
-        )}
-        {showPlaylistMenu && (
-          <div className="absolute right-0 mt-2 w-48 bg-[#1A1A3C] rounded-md shadow-lg z-50">
-            <ul className="py-1 max-h-60 overflow-y-auto">
-              {userPlaylists.map((playlist) => (
-                <li
-                  key={playlist._id}
-                  onClick={() => handleAddToPlaylist(playlist._id)}
-                  className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white"
-                >
-                  {playlist.name}
-                </li>
-              ))}
             </ul>
           </div>
         )}

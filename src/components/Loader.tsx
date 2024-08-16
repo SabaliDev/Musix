@@ -1,8 +1,12 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
-const Loader = ({ title }) => {
-  const noteVariants = {
+interface LoaderProps {
+  title?: string;
+}
+
+const Loader: React.FC<LoaderProps> = ({ title }) => {
+  const noteVariants: Variants = {
     initial: { y: 0 },
     animate: {
       y: [0, -20, 0],
@@ -10,7 +14,7 @@ const Loader = ({ title }) => {
     },
   };
 
-  const discVariants = {
+  const discVariants: Variants = {
     initial: { rotate: 0 },
     animate: {
       rotate: 360,
@@ -45,6 +49,7 @@ const Loader = ({ title }) => {
         <motion.svg
           viewBox="0 0 100 100"
           className="absolute w-full h-full"
+          variants={noteVariants}
           initial="initial"
           animate="animate"
         >
@@ -53,7 +58,6 @@ const Loader = ({ title }) => {
             stroke="#1DB954"
             strokeWidth="2"
             fill="transparent"
-            variants={noteVariants}
           />
           <motion.circle
             cx="30"

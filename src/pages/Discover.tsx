@@ -9,7 +9,6 @@ const Discover = () => {
   const { user, loading } = useSelector((state) => state.auth);
 
 
-
   if (loading) return <Loader title="Loading user data..." />;
   if (isFetching) return <Loader title="Loading songs..." />;
   if (error) return <Error />;

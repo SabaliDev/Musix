@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion';
 
-const Visualizer = ({ isPlaying }) => {
+interface VisualizerProps {
+  isPlaying: boolean;
+}
+
+const Visualizer: React.FC<VisualizerProps> = ({ isPlaying }) => {
   const barCount = 20;
   const bars = Array(barCount).fill(0);
 
@@ -11,7 +15,7 @@ const Visualizer = ({ isPlaying }) => {
           key={index}
           className="w-1 mx-[1px] bg-white"
           animate={{
-            height: isPlaying ? Math.random() * 100 + '%' : '10%',
+            height: isPlaying ? `${Math.random() * 100}%` : '10%',
           }}
           transition={{
             duration: 0.5,

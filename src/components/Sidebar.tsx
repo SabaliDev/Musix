@@ -1,23 +1,34 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { useSelector } from "react-redux";
 import {
   HiOutlineHashtag,
   HiOutlineHome,
   HiOutlineMenu,
-  HiOutlinePhotograph,
   HiOutlineUserGroup,
 } from "react-icons/hi";
-import { RiCloseLine ,RiIndentIncrease} from "react-icons/ri";
+import { RiCloseLine, RiIndentIncrease } from "react-icons/ri";
 
-const links = [
+// Define the type for the link items
+interface LinkItem {
+  name: string;
+  to: string;
+  icon: React.ElementType; // React component type for icons
+}
+
+// Define the links with type annotation
+const links: LinkItem[] = [
   { name: "Discover", to: "/", icon: HiOutlineHome },
   { name: "Top Charts", to: "/top-charts", icon: HiOutlineHashtag },
   { name: "Playback Queue", to: "/queue", icon: RiIndentIncrease },
   { name: "Listening Room", to: "/listening", icon: HiOutlineUserGroup },
 ];
 
-const NavLinks = ({ handleClick }) => (
+// Define the type for NavLinks props
+interface NavLinksProps {
+  handleClick?: () => void;
+}
+
+const NavLinks: React.FC<NavLinksProps> = ({ handleClick }) => (
   <div className="mt-10">
     {links.map((item) => (
       <NavLink
@@ -33,8 +44,8 @@ const NavLinks = ({ handleClick }) => (
   </div>
 );
 
-const Sidebar = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const Sidebar: React.FC = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   return (
     <>

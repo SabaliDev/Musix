@@ -8,23 +8,38 @@ import {
   fetchTracks, 
   setCurrentTrackIndex 
 } from '../../redux/features/roomPlayerSlice';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
+import { BASE_URL } from '../../constants/apiConstants';
+import { RootState, AppDispatch } from '../../redux/store'; // Assuming you have these types defined in your store
 
-const SERVER_URL = 'http://localhost:8080';
+interface Track {
+  title: string;
+  artist: string;
+  url: string;
+}
 
-const MusicPlayer = () => {
-  const dispatch = useDispatch();
-  const { isPlaying, currentTime, tracks, currentTrackIndex, isLoading, error } = useSelector(
+interface RoomPlayerState {
+  isPlaying: boolean;
+  currentTime: number;
+  tracks: Track[];
+  currentTrackIndex: number;
+  isLoading: boolean;
+  error: string | null;
+}
+
+const MusicPlayer: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { isPlaying, currentTime, tracks, currentTrackIndex, isLoading, error } = useSelector<RootState, RoomPlayerState>(
     (state) => state.roomPlayer
   );
-  const audioRef = useRef(null);
-  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
-  const socketRef = useRef(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<string>('Disconnected');
+  const socketRef = useRef<Socket | null>(null);
 
   const currentTrack = tracks[currentTrackIndex];
 
   const connectSocket = useCallback(() => {
-    socketRef.current = io(SERVER_URL);
+    socketRef.current = io(BASE_URL);
     
     socketRef.current.on('connect', () => {
       console.log('Connected to server');
@@ -36,12 +51,12 @@ const MusicPlayer = () => {
       setConnectionStatus('Disconnected');
     });
 
-    socketRef.current.on('connect_error', (error) => {
+    socketRef.current.on('connect_error', (error: Error) => {
       console.error('Connection error:', error);
       setConnectionStatus('Connection error');
     });
 
-    socketRef.current.on('stateUpdated', (state) => {
+    socketRef.current.on('stateUpdated', (state: { isPlaying: boolean; currentTime: number; currentTrackIndex: number }) => {
       dispatch(setIsPlaying(state.isPlaying));
       dispatch(setCurrentTime(state.currentTime));
       dispatch(setCurrentTrackIndex(state.currentTrackIndex));
@@ -62,7 +77,7 @@ const MusicPlayer = () => {
   useEffect(() => {
     if (audioRef.current) {
       if (isPlaying) {
-        audioRef.current.play().catch((error) => {
+        audioRef.current.play().catch((error: Error) => {
           console.log('Playback prevented:', error);
           dispatch(setIsPlaying(false));
         });
@@ -75,11 +90,13 @@ const MusicPlayer = () => {
   const handlePlayPause = useCallback(() => {
     const newIsPlaying = !isPlaying;
     dispatch(setIsPlaying(newIsPlaying));
-    socketRef.current.emit('updateState', {
-      isPlaying: newIsPlaying,
-      currentTime: audioRef.current.currentTime,
-      currentTrackIndex
-    });
+    if (socketRef.current && audioRef.current) {
+      socketRef.current.emit('updateState', {
+        isPlaying: newIsPlaying,
+        currentTime: audioRef.current.currentTime,
+        currentTrackIndex
+      });
+    }
   }, [isPlaying, currentTrackIndex, dispatch]);
 
   const handleTimeUpdate = useCallback(() => {
@@ -90,12 +107,16 @@ const MusicPlayer = () => {
 
   const handleNext = useCallback(() => {
     dispatch(nextTrack());
-    socketRef.current.emit('nextTrack');
+    if (socketRef.current) {
+      socketRef.current.emit('nextTrack');
+    }
   }, [dispatch]);
 
   const handlePrev = useCallback(() => {
     dispatch(prevTrack());
-    socketRef.current.emit('prevTrack');
+    if (socketRef.current) {
+      socketRef.current.emit('prevTrack');
+    }
   }, [dispatch]);
 
   if (isLoading) return <div className="text-white">Loading tracks...</div>;

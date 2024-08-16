@@ -6,8 +6,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import PlayPause from "./PlayPause";
 import { playPause, setActiveSong } from "../redux/features/playerSlice";
 import { useGetTopChartsQuery } from "../redux/services/spotifyCore";
+import { Song } from "../types";
 
-const TopChartCard = ({
+interface TopChartCardProps {
+  song: Song;
+  i: number;
+  isPlaying: boolean;
+  activeSong: Song | null;
+  handlePauseClick: () => void;
+  handlePlayClick: () => void;
+}
+
+const TopChartCard: React.FC<TopChartCardProps> = ({
   song,
   i,
   isPlaying,
@@ -28,7 +38,7 @@ const TopChartCard = ({
     <div className="flex-1 flex flex-row justify-between items-center">
       <img className="w-20 h-20 rounded-lg" src={song?.img} alt={song?.title} />
       <div className="flex-1 flex flex-col justify-center mx-3">
-        <Link to={`/songs/${song.key}`}>
+        <Link to={`/songs/${song._id}`}>
           <p className="text-xl font-bold text-white">{song?.title}</p>
         </Link>
         <Link to={`/artists/${song?.artist}`}>
@@ -46,7 +56,11 @@ const TopChartCard = ({
   </motion.div>
 );
 
-const TopArtists = ({ topPlays }) => {
+interface TopArtistsProps {
+  topPlays: Song[];
+}
+
+const TopArtists: React.FC<TopArtistsProps> = ({ topPlays }) => {
   const [currentIndex, setCurrentIndex] = React.useState(0);
 
   return (
@@ -56,7 +70,7 @@ const TopArtists = ({ topPlays }) => {
         animate={{ x: `${-currentIndex * 100}%` }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        {topPlays?.map((artist, index) => (
+        {topPlays?.map((artist) => (
           <motion.div
             key={artist._id}
             className="w-full flex-shrink-0 flex justify-center items-center"
@@ -91,24 +105,33 @@ const TopArtists = ({ topPlays }) => {
   );
 };
 
-const TopPlay = () => {
+interface RootState {
+  player: {
+    activeSong: Song | null;
+    isPlaying: boolean;
+  };
+}
+
+const TopPlay: React.FC = () => {
   const dispatch = useDispatch();
-  const { activeSong, isPlaying } = useSelector((state) => state.player);
+  const { activeSong, isPlaying } = useSelector(
+    (state: RootState) => state.player
+  );
   const { data } = useGetTopChartsQuery();
-  const divRef = useRef(null);
+  const divRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    divRef.current.scrollIntoView({ behavior: "smooth" });
+    divRef.current?.scrollIntoView({ behavior: "smooth" });
   });
 
-  const topPlays = data?.slice(0, 5);
+  const topPlays = data?.slice(0, 5) || [];
 
   const handlePauseClick = () => {
     dispatch(playPause(false));
   };
 
-  const handlePlayClick = (song, i) => {
-    dispatch(setActiveSong({ song, data, i }));
+  const handlePlayClick = (song: Song, i: number) => {
+    dispatch(setActiveSong({ song, data: data || [], i }));
     dispatch(playPause(true));
   };
 
@@ -121,7 +144,7 @@ const TopPlay = () => {
       className="xl:ml-6 ml-0 xl:mb-0 mb-6 flex-1 xl:max-w-[500px] max-w-full flex flex-col"
     >
       <motion.div className="w-full flex flex-col">
-        <motion.div 
+        <motion.div
           className="flex flex-row justify-between items-center"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -132,7 +155,7 @@ const TopPlay = () => {
 
         <div className="mt-4 flex flex-col gap-1">
           <AnimatePresence>
-            {topPlays?.map((song, i) => (
+            {topPlays.map((song, i) => (
               <TopChartCard
                 key={song._id}
                 song={song}
@@ -147,13 +170,13 @@ const TopPlay = () => {
         </div>
       </motion.div>
 
-      <motion.div 
+      <motion.div
         className="w-full flex flex-col mt-8"
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <motion.div 
+        <motion.div
           className="flex flex-row justify-between items-center"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
