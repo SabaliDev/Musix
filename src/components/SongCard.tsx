@@ -1,18 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
   playPause,
   setActiveSong,
   addToQueue,
 } from "../redux/features/playerSlice";
-
+import {
+  addToFavorites,
+  removeFromFavorites,
+} from "../redux/features/favoriteSlice";
 import PlayPause from "./PlayPause";
-
-import { BsThreeDots } from "react-icons/bs";
+import { BsThreeDots, BsHeart, BsHeartFill } from "react-icons/bs";
+import { AppDispatch } from "../redux/store";
 import { Song } from "../types";
-
-// Define types
 
 interface SongCardProps {
   song: Song;
@@ -22,6 +23,23 @@ interface SongCardProps {
   i: number;
 }
 
+interface RootState {
+  player: {
+    activeSong: Song | null;
+    isPlaying: boolean;
+  };
+  favorites: {
+    favorites: Song[];
+    loading: boolean;
+    error: string | null;
+  };
+  // Add other slices as needed
+  auth: any;
+  playlists: any;
+  listeningRoom: any;
+  roomPlayer: any;
+}
+
 const SongCard: React.FC<SongCardProps> = ({
   song,
   isPlaying,
@@ -29,9 +47,21 @@ const SongCard: React.FC<SongCardProps> = ({
   data,
   i,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [showOptions, setShowOptions] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
+
+  const favorites = useSelector(
+    (state: RootState) => state.favorites?.favorites ?? []
+  );
+  const loading = useSelector(
+    (state: RootState) => state.favorites?.loading ?? false
+  );
+  const error = useSelector(
+    (state: RootState) => state.favorites?.error ?? null
+  );
+
+  const isFavorite = favorites.some((favSong) => favSong._id === song._id);
 
   const handlePauseClick = () => {
     dispatch(playPause(false));
@@ -47,9 +77,16 @@ const SongCard: React.FC<SongCardProps> = ({
     setShowOptions(false);
   };
 
-  // Placeholder for adding to favorites
-  const handleAddToFavorites = () => {
-    console.log("Add to favorites functionality not implemented yet");
+  const handleToggleFavorite = async () => {
+    try {
+      if (isFavorite) {
+        await dispatch(removeFromFavorites(song._id)).unwrap();
+      } else {
+        await dispatch(addToFavorites(song._id)).unwrap();
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
     setShowOptions(false);
   };
 
@@ -98,7 +135,7 @@ const SongCard: React.FC<SongCardProps> = ({
       {/* Song Info */}
       <div className="mt-4 flex flex-col">
         <p className="font-semibold text-lg text-white truncate">
-          <Link to={`/songs/${song?.songId}`}>{song.title}</Link>
+          <Link to={`/songs/${song?._id}`}>{song.title}</Link>
         </p>
         <p className="text-sm truncate text-gray-300 mt-1">
           <Link to={`/artists/${song?.artistId}`}>{song.artist}</Link>
@@ -122,15 +159,39 @@ const SongCard: React.FC<SongCardProps> = ({
                 Add to Queue
               </li>
               <li
-                onClick={handleAddToFavorites}
-                className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white"
+                onClick={handleToggleFavorite}
+                className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-white flex items-center"
               >
-                Add to Favourites
+                {isFavorite ? (
+                  <>
+                    <BsHeartFill className="mr-2 text-red-500" />
+                    Remove from Favorites
+                  </>
+                ) : (
+                  <>
+                    <BsHeart className="mr-2" />
+                    Add to Favorites
+                  </>
+                )}
               </li>
             </ul>
           </div>
         )}
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="absolute bottom-0 left-0 right-0 bg-red-500 text-white p-2 text-center">
+          {error}
+        </div>
+      )}
+
+      {/* Loading Indicator */}
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+        </div>
+      )}
     </div>
   );
 };

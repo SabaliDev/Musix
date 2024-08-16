@@ -1,8 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-import {User,Credentials} from "../../types"
-
-
+import { User, Credentials } from "../../types";
+import { BASE_URL } from "../../constants/apiConstants";
 
 interface AuthState {
   user: User | null;
@@ -11,11 +10,8 @@ interface AuthState {
   error: string | null;
 }
 
-
-
 interface UserInfo extends Credentials {
   email: string;
-
 }
 
 interface AuthResponse {
@@ -34,7 +30,7 @@ export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
   "/auth/login",
   async (credentials) => {
     const response = await axios.post<AuthResponse>(
-      "http://localhost:8080/auth/login",
+      `${BASE_URL}auth/login`,
       credentials
     );
     return response.data;
@@ -45,7 +41,7 @@ export const registerUser = createAsyncThunk<AuthResponse, UserInfo>(
   "auth/register",
   async (userInfo) => {
     const response = await axios.post<AuthResponse>(
-      "http://localhost:8080/auth/register",
+      `${BASE_URL}auth/register`,
       userInfo
     );
     return response.data;
@@ -68,12 +64,15 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        localStorage.setItem("token", action.payload.token);
-      })
+      .addCase(
+        loginUser.fulfilled,
+        (state, action: PayloadAction<AuthResponse>) => {
+          state.loading = false;
+          state.user = action.payload.user;
+          state.token = action.payload.token;
+          localStorage.setItem("token", action.payload.token);
+        }
+      )
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "An error occurred";
@@ -82,12 +81,15 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        localStorage.setItem("token", action.payload.token);
-      })
+      .addCase(
+        registerUser.fulfilled,
+        (state, action: PayloadAction<AuthResponse>) => {
+          state.loading = false;
+          state.user = action.payload.user;
+          state.token = action.payload.token;
+          localStorage.setItem("token", action.payload.token);
+        }
+      )
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "An error occurred";

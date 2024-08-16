@@ -5,6 +5,7 @@ import {
   HiOutlineHome,
   HiOutlineMenu,
   HiOutlineUserGroup,
+  HiOutlineHeart 
 } from "react-icons/hi";
 import { RiCloseLine, RiIndentIncrease } from "react-icons/ri";
 
@@ -19,6 +20,7 @@ interface LinkItem {
 const links: LinkItem[] = [
   { name: "Discover", to: "/", icon: HiOutlineHome },
   { name: "Top Charts", to: "/top-charts", icon: HiOutlineHashtag },
+  { name: "Favorites", to: "/favorite", icon:  HiOutlineHeart  },
   { name: "Playback Queue", to: "/queue", icon: RiIndentIncrease },
   { name: "Listening Room", to: "/listening", icon: HiOutlineUserGroup },
 ];

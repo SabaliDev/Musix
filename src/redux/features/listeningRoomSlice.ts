@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import { BASE_URL } from "../../constants/apiConstants";
 
 interface Room {
   _id: string;
@@ -35,7 +36,7 @@ export const fetchRoomDetails = createAsyncThunk<Room, string, { rejectValue: st
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get<Room>(
-        `http://localhost:8080/api/listening/${roomId}`,
+        `${BASE_URL}api/listening/${roomId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,7 +56,7 @@ export const joinRoom = createAsyncThunk<Room, string, { rejectValue: string }>(
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post<Room>(
-        `http://localhost:8080/api/listening/join/${roomId}`,
+        `${BASE_URL}api/listening/join/${roomId}`,
         {},
         {
           headers: {
@@ -77,7 +78,7 @@ export const createRoom = createAsyncThunk<Room, string, { rejectValue: string }
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post<Room>(
-        "http://localhost:8080/api/listening/create",
+        `${BASE_URL}api/listening/create`,
         {
           name: roomName,
         },
@@ -100,7 +101,7 @@ export const updateRoomPlayback = createAsyncThunk<PlaybackState, { roomId: stri
   async ({ roomId, playbackState }, thunkAPI) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post<PlaybackState>(`http://localhost:8080/api/listening/${roomId}/playback`, playbackState, {
+      const response = await axios.post<PlaybackState>(`${BASE_URL}api/listening/${roomId}/playback`, playbackState, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -118,7 +119,7 @@ export const leaveRoom = createAsyncThunk<string, string, { rejectValue: string 
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:8080/api/listening/leave/${roomId}`,
+        `${BASE_URL}api/listening/leave/${roomId}`,
         {},
         {
           headers: {

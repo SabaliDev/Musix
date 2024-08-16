@@ -18,6 +18,7 @@ import {
   Login,
   QueuePage,
   ListeningRoom,
+  FavoritesPage
 } from "./pages";
 
 interface RootState {
@@ -59,6 +60,7 @@ const App: React.FC = () => {
                       <Route path="/" element={<Discover />} />
                       <Route path="/top-artists" element={<TopArtists />} />
                       <Route path="/top-charts" element={<TopCharts />} />
+                      <Route path="/favorite" element={<FavoritesPage />} />
                       <Route path="/queue" element={<QueuePage />} />
                       <Route path="/listening" element={<ListeningRoom />} />
                       <Route path="/search/:searchTerm" element={<Search />} />

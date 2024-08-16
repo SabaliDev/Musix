@@ -6,6 +6,7 @@ import authReducer from "./features/authSlice";
 import playlistReducer from "./features/playListSlice";
 import listeningRoomReducer from "./features/listeningRoomSlice";
 import roomPlayerReducer from "./features/roomPlayerSlice";
+import favoritesReducer from "./features/favoriteSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     auth: authReducer,
     playlists: playlistReducer,
     listeningRoom: listeningRoomReducer,
+    favorites: favoritesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(spotifyCoreApi.middleware),
