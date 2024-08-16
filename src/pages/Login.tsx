@@ -1,29 +1,32 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { loginUser } from '../redux/features/authSlice';
+import React, { useState, FormEvent } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { loginUser } from "../redux/features/authSlice";
+import { AppDispatch } from "../redux/store"; // Assuming you have this type defined in your store
+import { Credentials } from "../types"; // Import the Credentials type
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  
-  const dispatch = useDispatch();
+const Login: React.FC = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const resultAction = await dispatch(loginUser({ email, password }));
+      const credentials: Credentials = { email, password };
+      const resultAction = await dispatch(loginUser(credentials));
       if (loginUser.fulfilled.match(resultAction)) {
-        navigate('/');  // Redirect to home page on successful login
+        navigate("/"); // Redirect to home page on successful login
       } else {
-        setError('Login failed. Please check your credentials.');
+        setError("Login failed. Please check your credentials.");
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError("An error occurred. Please try again.");
     }
   };
 
@@ -46,7 +49,9 @@ const Login = () => {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-white bg-transparent rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setEmail(e.target.value)
+                }
               />
             </div>
             <div>
@@ -59,7 +64,9 @@ const Login = () => {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-white bg-transparent rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setPassword(e.target.value)
+                }
               />
             </div>
           </div>
@@ -75,8 +82,11 @@ const Login = () => {
         </form>
         <div className="text-center">
           <p className="text-sm">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-medium text-indigo-400 hover:text-indigo-300">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="font-medium text-indigo-400 hover:text-indigo-300"
+            >
               Register here
             </Link>
           </p>

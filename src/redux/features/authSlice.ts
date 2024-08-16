@@ -1,11 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import {User,Credentials} from "../../types"
 
-interface User {
-  id: string;
-  username: string;
-  // Add other user properties as needed
-}
+
 
 interface AuthState {
   user: User | null;
@@ -14,14 +11,11 @@ interface AuthState {
   error: string | null;
 }
 
-interface Credentials {
-  username: string;
-  password: string;
-}
+
 
 interface UserInfo extends Credentials {
   email: string;
-  // Add other registration fields as needed
+
 }
 
 interface AuthResponse {

@@ -10,7 +10,6 @@ import {
   PublicRoute,
 } from "./components";
 import {
-  ArtistDetails,
   TopArtists,
   TopCharts,
   Discover,
@@ -21,9 +20,20 @@ import {
   ListeningRoom,
 } from "./pages";
 
-const App = () => {
-  const { activeRoom } = useSelector((state) => state.listeningRoom);
-  const { activeSong } = useSelector((state) => state.player);
+interface RootState {
+  listeningRoom: {
+    activeRoom: boolean | null;
+  };
+  player: {
+    activeSong: {
+      title: string;
+    } | null;
+  };
+}
+
+const App: React.FC = () => {
+  const { activeRoom } = useSelector((state: RootState) => state.listeningRoom);
+  const { activeSong } = useSelector((state: RootState) => state.player);
   const location = useLocation();
 
   const isListeningRoom = location.pathname === "/listening";
@@ -47,10 +57,8 @@ const App = () => {
                   <div className="flex-1 h-fit pb-40">
                     <Routes>
                       <Route path="/" element={<Discover />} />
-
                       <Route path="/top-artists" element={<TopArtists />} />
                       <Route path="/top-charts" element={<TopCharts />} />
-                      <Route path="/artists/:id" element={<ArtistDetails />} />
                       <Route path="/queue" element={<QueuePage />} />
                       <Route path="/listening" element={<ListeningRoom />} />
                       <Route path="/search/:searchTerm" element={<Search />} />

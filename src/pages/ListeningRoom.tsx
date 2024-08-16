@@ -6,24 +6,45 @@ import {
   createRoom,
   leaveRoom,
   fetchRoomDetails,
-  updateRoomPlayback,
-  setRoomActiveSong,
-  playPauseRoom,
-  setPlaylist,
 } from "../redux/features/listeningRoomSlice";
 import { stopGlobalPlayer } from "../redux/features/playerSlice";
 import MusicPlayer from "../components/ListeningRoom/RoomMusicPlayer";
-
 import Chat from "../components/ListeningRoom/ChatRoom";
+import { Song, User } from "../types";
+import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
 
-const ListeningRoom = () => {
+interface Room {
+  _id: string;
+  name: string;
+  participants: string[];
+  playlist?: Song[];
+}
+
+interface RootState {
+  auth: {
+    user: User | null;
+  };
+  listeningRoom: {
+    activeRoom: Room | null;
+    isLoading: boolean;
+    error: string | null;
+    currentSong: Song | null;
+    isPlaying: boolean;
+    playlist: Song[];
+  };
+  roomPlayer: {
+    tracks: Song[];
+  };
+}
+
+const ListeningRoom: React.FC = () => {
   const [roomCode, setRoomCode] = useState("");
   const [createRoomName, setCreateRoomName] = useState("");
-  const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const { activeRoom, isLoading, error, currentSong, isPlaying, playlist } =
-    useSelector((state) => state.listeningRoom);
-  const { tracks } = useSelector((state) => state.roomPlayer);
+  const dispatch = useDispatch<ThunkDispatch<RootState, unknown, AnyAction>>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { activeRoom, isLoading, error } = useSelector(
+    (state: RootState) => state.listeningRoom
+  );
 
   useEffect(() => {
     const storedRoomId = localStorage.getItem("activeRoomId");
@@ -31,12 +52,6 @@ const ListeningRoom = () => {
       dispatch(fetchRoomDetails(storedRoomId));
     }
   }, [dispatch, activeRoom]);
-
-  useEffect(() => {
-    if (activeRoom && activeRoom.playlist) {
-      dispatch(setPlaylist(activeRoom.playlist));
-    }
-  }, [activeRoom, dispatch]);
 
   const handleCreateRoom = () => {
     if (createRoomName.trim()) {
@@ -58,19 +73,6 @@ const ListeningRoom = () => {
     if (activeRoom) {
       dispatch(leaveRoom(activeRoom._id));
     }
-  };
-
-  const handleRoomSongSelect = (song) => {
-    if (!activeRoom) return;
-
-    dispatch(setRoomActiveSong(song));
-    dispatch(playPauseRoom(true));
-    dispatch(
-      updateRoomPlayback({
-        roomId: activeRoom._id,
-        playbackState: { currentSong: song, isPlaying: true, playlist },
-      })
-    );
   };
 
   return (

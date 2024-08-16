@@ -22,3 +22,25 @@ export interface Playlist {
   name: string;
   songs: Song[];
 }
+
+export interface User {
+  username: string;
+}
+
+export interface Credentials {
+  email: string;
+  password: string;
+}
+
+export interface UserInfo extends Credentials {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface RootState {
+  player: {
+    activeSong: Song | null;
+    isPlaying: boolean;
+  };
+}

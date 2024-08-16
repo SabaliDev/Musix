@@ -4,11 +4,16 @@ import { useParams } from "react-router-dom";
 
 import { Error, Loader, SongCard } from "../components";
 import { useGetSongsBySearchQuery } from "../redux/services/spotifyCore";
+import { Song, RootState } from "../types";
 
-const Search = () => {
-  const { searchTerm } = useParams();
-  const { activeSong, isPlaying } = useSelector((state) => state.player);
-  const { data, isFetching, error } = useGetSongsBySearchQuery(searchTerm);
+const Search: React.FC = () => {
+  const { searchTerm } = useParams<{ searchTerm: string }>();
+  const { activeSong, isPlaying } = useSelector(
+    (state: RootState) => state.player
+  );
+  const { data, isFetching, error } = useGetSongsBySearchQuery(
+    searchTerm ?? ""
+  );
 
   if (isFetching) return <Loader title={`Searching ${searchTerm}...`} />;
 
@@ -22,7 +27,7 @@ const Search = () => {
 
       <div className="flex flex-wrap sm:justify-start justify-center gap-8">
         {data?.length ? (
-          data.map((song, i) => (
+          data.map((song: Song, i: number) => (
             <SongCard
               key={song.title}
               song={song}
