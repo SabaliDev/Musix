@@ -1,6 +1,29 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { BASE_URL } from "../../constants/apiConstants";
 
-const initialState = {
+interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  artistId: number;
+  img: string;
+  songId: number;
+  url: string;
+  __v: number;
+  _id: string;
+
+}
+
+interface RoomPlayerState {
+  isPlaying: boolean;
+  currentTime: number;
+  currentTrackIndex: number;
+  tracks: Track[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+const initialState: RoomPlayerState = {
   isPlaying: false,
   currentTime: 0,
   currentTrackIndex: 0,
@@ -9,10 +32,10 @@ const initialState = {
   error: null,
 };
 
-export const fetchTracks = createAsyncThunk(
+export const fetchTracks = createAsyncThunk<Track[]>(
   'player/fetchTracks',
   async () => {
-    const response = await fetch('http://localhost:8080/api/music/songs');
+    const response = await fetch(`${BASE_URL}api/music/songs`);
     if (!response.ok) {
       throw new Error('Failed to fetch tracks');
     }
@@ -24,10 +47,10 @@ const roomPlayerSlice = createSlice({
   name: 'roomPlayer',
   initialState,
   reducers: {
-    setIsPlaying: (state, action) => {
+    setIsPlaying: (state, action: PayloadAction<boolean>) => {
       state.isPlaying = action.payload;
     },
-    setCurrentTime: (state, action) => {
+    setCurrentTime: (state, action: PayloadAction<number>) => {
       state.currentTime = action.payload;
     },
     nextTrack: (state) => {
@@ -38,7 +61,7 @@ const roomPlayerSlice = createSlice({
       state.currentTrackIndex = (state.currentTrackIndex - 1 + state.tracks.length) % state.tracks.length;
       state.currentTime = 0;
     },
-    setCurrentTrackIndex: (state, action) => {
+    setCurrentTrackIndex: (state, action: PayloadAction<number>) => {
       state.currentTrackIndex = action.payload;
     },
   },
@@ -47,13 +70,13 @@ const roomPlayerSlice = createSlice({
       .addCase(fetchTracks.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(fetchTracks.fulfilled, (state, action) => {
+      .addCase(fetchTracks.fulfilled, (state, action: PayloadAction<Track[]>) => {
         state.isLoading = false;
         state.tracks = action.payload;
       })
       .addCase(fetchTracks.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message;
+        state.error = action.error.message || "An error occurred";
       });
   },
 });

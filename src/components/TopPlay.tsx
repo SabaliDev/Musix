@@ -58,7 +58,7 @@ const TopArtists = ({ topPlays }) => {
       >
         {topPlays?.map((artist, index) => (
           <motion.div
-            key={artist?.key}
+            key={artist._id}
             className="w-full flex-shrink-0 flex justify-center items-center"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -134,7 +134,7 @@ const TopPlay = () => {
           <AnimatePresence>
             {topPlays?.map((song, i) => (
               <TopChartCard
-                key={song.key}
+                key={song._id}
                 song={song}
                 i={i}
                 isPlaying={isPlaying}

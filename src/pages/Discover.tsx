@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import { Error, Loader, SongCard } from "../components";
 import { useGetTopChartsQuery } from "../redux/services/spotifyCore";
@@ -6,7 +6,7 @@ import { useGetTopChartsQuery } from "../redux/services/spotifyCore";
 const Discover = () => {
   const { activeSong, isPlaying } = useSelector((state) => state.player);
   const { data, isFetching, error } = useGetTopChartsQuery();
-  const { user, loading, token } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
 
 
 
@@ -18,13 +18,13 @@ const Discover = () => {
     <div className="flex flex-col">
       <div className="w-full flex justify-between items-center sm:flex-row flex-col mt-4 mb-10">
         <h2 className="font-bold text-3xl text-white text-left">
-           {user ? `Welcome, ${user.username}` : 'Welcome, Guest'}
+          {user ? `Welcome, ${user.username}` : "Welcome, Guest"}
         </h2>
       </div>
       <div className="flex flex-wrap sm:justify-start justify-center gap-8">
         {data?.map((song, i) => (
           <SongCard
-            key={song.key}
+            key={song.id || i} // Use song.id if available, fallback to index
             song={song}
             isPlaying={isPlaying}
             activeSong={activeSong}

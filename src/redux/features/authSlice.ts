@@ -1,17 +1,45 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const initialState = {
+interface User {
+  id: string;
+  username: string;
+  // Add other user properties as needed
+}
+
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  error: string | null;
+}
+
+interface Credentials {
+  username: string;
+  password: string;
+}
+
+interface UserInfo extends Credentials {
+  email: string;
+  // Add other registration fields as needed
+}
+
+interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+const initialState: AuthState = {
   user: null,
   token: localStorage.getItem("token") || null,
   loading: false,
   error: null,
 };
 
-export const loginUser = createAsyncThunk(
+export const loginUser = createAsyncThunk<AuthResponse, Credentials>(
   "/auth/login",
   async (credentials) => {
-    const response = await axios.post(
+    const response = await axios.post<AuthResponse>(
       "http://localhost:8080/auth/login",
       credentials
     );
@@ -19,10 +47,10 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-export const registerUser = createAsyncThunk(
+export const registerUser = createAsyncThunk<AuthResponse, UserInfo>(
   "auth/register",
   async (userInfo) => {
-    const response = await axios.post(
+    const response = await axios.post<AuthResponse>(
       "http://localhost:8080/auth/register",
       userInfo
     );
@@ -46,7 +74,7 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(loginUser.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
@@ -54,13 +82,13 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.error.message || "An error occurred";
       })
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(registerUser.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
@@ -68,7 +96,7 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.error.message || "An error occurred";
       });
   },
 });
