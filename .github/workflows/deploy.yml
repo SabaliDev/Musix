@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      REGION: africa-south1 
+      IMAGE_NAME: my-app  # Hardcoded image name for testing
+      REGION: europe-west1
 
     steps:
       - name: Checkout code
@@ -27,9 +28,15 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Debugging Environment Variables
+        run: |
+          echo "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}"
+          echo "IMAGE_NAME=${{ env.IMAGE_NAME }}"
+          echo "GITHUB_SHA=${{ github.sha }}"
+
       - name: Build Docker image
         run: |
-          docker build -t gcr.io/$GCP_PROJECT_ID/$IMAGE_NAME:$GITHUB_SHA .
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
 
       - name: Set up Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v2
@@ -39,12 +46,12 @@ jobs:
 
       - name: Push Docker image to Google Container Registry
         run: |
-          docker push gcr.io/$GCP_PROJECT_ID/$IMAGE_NAME:$GITHUB_SHA
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $CLOUD_RUN_SERVICE_NAME \
-            --image gcr.io/$GCP_PROJECT_ID/$IMAGE_NAME:$GITHUB_SHA \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             --platform managed \
-            --region ${{ env.REGION }} \  # Use the environment variable for the region
+            --region ${{ env.REGION }} \
             --allow-unauthenticated
