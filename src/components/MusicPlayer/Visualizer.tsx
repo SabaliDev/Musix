@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 interface VisualizerProps {
   isPlaying: boolean;
@@ -15,13 +15,13 @@ const Visualizer: React.FC<VisualizerProps> = ({ isPlaying }) => {
           key={index}
           className="w-1 mx-[1px] bg-white"
           animate={{
-            height: isPlaying ? `${Math.random() * 100}%` : '10%',
+            height: isPlaying ? `${Math.random() * 100}%` : "10%",
           }}
           transition={{
             duration: 0.5,
             repeat: Infinity,
-            repeatType: 'reverse',
-            ease: 'easeInOut',
+            repeatType: "reverse",
+            ease: "easeInOut",
           }}
         />
       ))}
